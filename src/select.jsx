@@ -1,7 +1,8 @@
-'use strict';
-var React = require('react');
-var ReactDOM = require('react-dom');
-var assign = require('object-assign');
+"use strict";
+var React = require("react");
+var PropTypes = require("prop-types");
+var ReactDOM = require("react-dom");
+var assign = require("object-assign");
 
 var keyboard = {
   space: 32,
@@ -12,79 +13,77 @@ var keyboard = {
   downArrow: 40
 };
 
-var doesOptionMatch = function (option, s) {
+var doesOptionMatch = function(option, s) {
   s = s.toLowerCase();
 
   // Check that passed in option wraps a string, if it wraps a component, match val
-  if (typeof option.props.children === 'string') {
+  if (typeof option.props.children === "string") {
     return option.props.children.toLowerCase().indexOf(s) === 0;
   } else {
     return option.props.value.toLowerCase().indexOf(s) === 0;
   }
-}
+};
 
 var classBase = React.createClass({
-  displayName: 'RadonSelect',
+  displayName: "RadonSelect",
   propTypes: {
-    children: function (props, propName) {
+    children: function(props, propName) {
       if (!props[propName] || !Array.isArray(props[propName])) {
-        return new Error('children must be an array of RadonSelect.Option');
+        return new Error("children must be an array of RadonSelect.Option");
       }
 
-      props[propName].forEach(function (child) {
-        if (child.type.displayName !== 'RadonSelectOption') {
-          return new Error('children must be an array of RadonSelect.Option');
+      props[propName].forEach(function(child) {
+        if (child.type.displayName !== "RadonSelectOption") {
+          return new Error("children must be an array of RadonSelect.Option");
         }
       });
     },
-    selectName: React.PropTypes.string.isRequired,
-    defaultValue: React.PropTypes.string,
-    ariaLabel: React.PropTypes.string,
-    placeholderText: React.PropTypes.string,
-    typeaheadDelay: React.PropTypes.number,
-    showCurrentOptionWhenOpen: React.PropTypes.bool,
-    disabled: React.PropTypes.bool,
-    onChange: React.PropTypes.func,
-    onBlur: React.PropTypes.func,
+    selectName: PropTypes.string.isRequired,
+    defaultValue: PropTypes.string,
+    ariaLabel: PropTypes.string,
+    placeholderText: PropTypes.string,
+    typeaheadDelay: PropTypes.number,
+    showCurrentOptionWhenOpen: PropTypes.bool,
+    disabled: PropTypes.bool,
+    onChange: PropTypes.func,
+    onBlur: PropTypes.func,
     // Should there just be a baseClassName that these are derived from?
-    className: React.PropTypes.string,
-    openClassName: React.PropTypes.string,
-    focusClassName: React.PropTypes.string,
-    listClassName: React.PropTypes.string,
-    disabledClassName: React.PropTypes.string,
-    currentOptionClassName: React.PropTypes.string,
-    hiddenSelectClassName: React.PropTypes.string,
-    currentOptionStyle: React.PropTypes.object,
-    optionListStyle: React.PropTypes.object,
-    disableUpDownAutoRefresh: React.PropTypes.bool
+    className: PropTypes.string,
+    openClassName: PropTypes.string,
+    focusClassName: PropTypes.string,
+    listClassName: PropTypes.string,
+    disabledClassName: PropTypes.string,
+    currentOptionClassName: PropTypes.string,
+    hiddenSelectClassName: PropTypes.string,
+    currentOptionStyle: PropTypes.object,
+    optionListStyle: PropTypes.object,
+    disableUpDownAutoRefresh: PropTypes.bool
   },
-  getDefaultProps () {
+  getDefaultProps() {
     return {
       disabled: false,
       typeaheadDelay: 1000,
       showCurrentOptionWhenOpen: false,
-      onChange: function () {},
-      onBlur: function () {},
-      className: 'radon-select',
-      openClassName: 'open',
-      focusClassName: 'focus',
-      listClassName: 'radon-select-list',
-      currentOptionClassName: 'radon-select-current',
-      hiddenSelectClassName: 'radon-select-hidden-select',
-      disabledClassName: 'radon-select-disabled',
+      onChange: function() {},
+      onBlur: function() {},
+      className: "radon-select",
+      openClassName: "open",
+      focusClassName: "focus",
+      listClassName: "radon-select-list",
+      currentOptionClassName: "radon-select-current",
+      hiddenSelectClassName: "radon-select-hidden-select",
+      disabledClassName: "radon-select-disabled",
       currentOptionStyle: {},
       optionListStyle: {},
       disableUpDownAutoRefresh: false
     };
   },
-  getInitialState () {
-    var initialIndex = this.props.defaultValue !== undefined
-      ? this.getValueIndex(this.props.defaultValue)
-      : -1;
+  getInitialState() {
+    var initialIndex =
+      this.props.defaultValue !== undefined ? this.getValueIndex(this.props.defaultValue) : -1;
 
-    var defaultValue = initialIndex === -1
-      ? this.props.children[0].props.value
-      : this.props.defaultValue;
+    var defaultValue =
+      initialIndex === -1 ? this.props.children[0].props.value : this.props.defaultValue;
 
     return {
       selectedOptionIndex: initialIndex === -1 ? false : initialIndex,
@@ -93,7 +92,7 @@ var classBase = React.createClass({
       focus: false
     };
   },
-  getValueIndex (val) {
+  getValueIndex(val) {
     for (var i = 0; i < this.props.children.length; ++i) {
       if (this.props.children[i].props.value === val) {
         return i;
@@ -101,58 +100,68 @@ var classBase = React.createClass({
     }
     return -1;
   },
-  getValue () {
+  getValue() {
     return this.state.selectedOptionVal;
   },
-  setValue (val, silent) {
+  setValue(val, silent) {
     var index = this.getValueIndex(val);
 
     if (index !== -1) {
-      this.setState({
-        selectedOptionIndex: index,
-        selectedOptionVal: val
-      }, function () {
-        if (!silent) {
-          this.props.onChange(this.state.selectedOptionVal);
+      this.setState(
+        {
+          selectedOptionIndex: index,
+          selectedOptionVal: val
+        },
+        function() {
+          if (!silent) {
+            this.props.onChange(this.state.selectedOptionVal);
+          }
         }
-      });
+      );
     }
   },
-  onChange () {
+  onChange() {
     this.props.onChange(this.state.selectedOptionVal);
   },
-  moveIndexByOne (decrement) {
+  moveIndexByOne(decrement) {
     var selectedOptionIndex = this.state.selectedOptionIndex || 0;
     // Don't go out of array bounds
-    if (decrement && this.state.selectedOptionIndex === 0 ||
-      !decrement && this.state.selectedOptionIndex === this.props.children.length - 1) {
+    if (
+      (decrement && this.state.selectedOptionIndex === 0) ||
+      (!decrement && this.state.selectedOptionIndex === this.props.children.length - 1)
+    ) {
       return;
     }
 
-    selectedOptionIndex += decrement ? -1 : 1
+    selectedOptionIndex += decrement ? -1 : 1;
 
-    this.setState({
-      selectedOptionIndex: selectedOptionIndex,
-      selectedOptionVal: this.props.children[selectedOptionIndex].props.value
-    }, function () {
-      if (!this.props.disableUpDownAutoRefresh) {
-        this.onChange();
-      }
+    this.setState(
+      {
+        selectedOptionIndex: selectedOptionIndex,
+        selectedOptionVal: this.props.children[selectedOptionIndex].props.value
+      },
+      function() {
+        if (!this.props.disableUpDownAutoRefresh) {
+          this.onChange();
+        }
 
-      if (this.state.open) {
-        this.isFocusing = true;
-        this.focus(this.refs['option' + this.state.selectedOptionIndex]);
+        if (this.state.open) {
+          this.isFocusing = true;
+          this.focus(this.refs["option" + this.state.selectedOptionIndex]);
+        }
       }
-    });
+    );
   },
-  typeahead (character) {
+  typeahead(character) {
     var self = this;
     var matchFound = false;
     var currentIndex = 0;
 
     // If we've got a selectedOptionIndex start at the next one (with wrapping), or start at 0
-    if (this.state.selectedOptionIndex !== false &&
-      this.state.selectedOptionIndex !== this.props.children.length - 1) {
+    if (
+      this.state.selectedOptionIndex !== false &&
+      this.state.selectedOptionIndex !== this.props.children.length - 1
+    ) {
       currentIndex = this.state.selectedOptionIndex + 1;
     }
 
@@ -180,68 +189,80 @@ var classBase = React.createClass({
     }
 
     if (matchFound !== false) {
-      this.setState({
-        selectedOptionIndex: matchFound,
-        selectedOptionVal: this.props.children[matchFound].props.value
-      }, function () {
-        this.onChange();
+      this.setState(
+        {
+          selectedOptionIndex: matchFound,
+          selectedOptionVal: this.props.children[matchFound].props.value
+        },
+        function() {
+          this.onChange();
 
-        if (this.state.open) {
-          this.isFocusing = true;
-          this.refs['option' + this.state.selectedOptionIndex].focus();
+          if (this.state.open) {
+            this.isFocusing = true;
+            this.refs["option" + this.state.selectedOptionIndex].focus();
+          }
         }
-      });
+      );
     }
 
-    self.typeaheadCountdown = setTimeout(function () {
+    self.typeaheadCountdown = setTimeout(function() {
       self.typeaheadCountdown = undefined;
       self.typingAhead = false;
-      self.currentString = '';
-    }, this.props.typeaheadDelay)
+      self.currentString = "";
+    }, this.props.typeaheadDelay);
   },
-  toggleOpen () {
+  toggleOpen() {
     if (this.props.disabled) {
       return;
     }
 
     this.isFocusing = false;
 
-    this.setState({
-      open: !this.state.open,
-      selectedOptionIndex: this.state.selectedOptionIndex || 0
-    }, function () {
-      this.onChange();
+    this.setState(
+      {
+        open: !this.state.open,
+        selectedOptionIndex: this.state.selectedOptionIndex || 0
+      },
+      function() {
+        this.onChange();
 
-      if (!this.state.open) {
-        this.focus(this.refs['currentOption']); //eslint-disable-line dot-notation
-      } else {
-        this.focus(this.refs['option' + (this.state.selectedOptionIndex || 0)]);
+        if (!this.state.open) {
+          this.focus(this.refs["currentOption"]); //eslint-disable-line dot-notation
+        } else {
+          this.focus(this.refs["option" + (this.state.selectedOptionIndex || 0)]);
+        }
       }
-    });
+    );
   },
-  onFocus () {
+  onFocus() {
     this.setState({
       focus: true
     });
   },
-  onBlur () {
-    this.setState({
-      focus: false
-    }, () => { this.props.onBlur(); });
+  onBlur() {
+    this.setState(
+      {
+        focus: false
+      },
+      () => {
+        this.props.onBlur();
+      }
+    );
   },
   // Arrow keys are only captured by onKeyDown not onKeyPress
   // http://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
-  onKeyDown (ev) {
+  onKeyDown(ev) {
     var isArrowKey = ev.keyCode === keyboard.upArrow || ev.keyCode === keyboard.downArrow;
 
     if (this.state.open) {
       ev.preventDefault();
 
       //charcode is enter, esc, or not typingahead and space
-      if (ev.keyCode === keyboard.enter ||
+      if (
+        ev.keyCode === keyboard.enter ||
         ev.keyCode === keyboard.escape ||
-        !this.typingAhead && ev.keyCode === keyboard.space) {
-
+        (!this.typingAhead && ev.keyCode === keyboard.space)
+      ) {
         this.toggleOpen();
       } else if (isArrowKey) {
         this.moveIndexByOne(/*decrement*/ ev.keyCode === keyboard.upArrow);
@@ -253,31 +274,36 @@ var classBase = React.createClass({
       if (ev.keyCode === keyboard.space || isArrowKey) {
         ev.preventDefault();
         this.toggleOpen();
-      // If not tab, escape, or enter, assume alphanumeric
-      } else if (ev.keyCode !== keyboard.enter ||
+        // If not tab, escape, or enter, assume alphanumeric
+      } else if (
+        ev.keyCode !== keyboard.enter ||
         ev.keyCode !== keyboard.escape ||
-        ev.keyCode !== keyboard.tab) {
+        ev.keyCode !== keyboard.tab
+      ) {
         this.typeahead(String.fromCharCode(ev.keyCode));
       }
     }
   },
-  onClickOption (index, ev) {
-    var child = this.refs['option' + index];
+  onClickOption(index, ev) {
+    var child = this.refs["option" + index];
 
     // Null safety here prevents an iOS-specific bug preventing selection of options
     ev ? ev.preventDefault() : null;
 
-    this.setState({
-      selectedOptionIndex: index,
-      selectedOptionVal: child.props.value,
-      open: false
-    }, function () {
-      this.onChange();
+    this.setState(
+      {
+        selectedOptionIndex: index,
+        selectedOptionVal: child.props.value,
+        open: false
+      },
+      function() {
+        this.onChange();
 
-      this.refs['currentOption'].focus(); //eslint-disable-line dot-notation
-    });
+        this.refs["currentOption"].focus(); //eslint-disable-line dot-notation
+      }
+    );
   },
-  onBlurOption () {
+  onBlurOption() {
     // Make sure we only catch blur that wasn't triggered by this component
     if (this.isFocusing) {
       this.isFocusing = false;
@@ -285,7 +311,7 @@ var classBase = React.createClass({
       return;
     }
 
-    var hoveredSelectEl = ReactDOM.findDOMNode(this).querySelector(':hover');
+    var hoveredSelectEl = ReactDOM.findDOMNode(this).querySelector(":hover");
     // Clicks on the scrollbar trigger blur, only test is hover.
     // If the mouse is over the select, don't close the option list
     if (hoveredSelectEl) {
@@ -294,13 +320,13 @@ var classBase = React.createClass({
 
     this.toggleOpen();
   },
-  onMouseDown (ev) {
+  onMouseDown(ev) {
     // Make sure that clicks on the scrollbar don't steal focus
     if (this.state.open) {
       ev.preventDefault();
     }
   },
-  getWrapperClasses () {
+  getWrapperClasses() {
     var wrapperClassNames = [this.props.className];
 
     if (this.state.open) {
@@ -315,35 +341,37 @@ var classBase = React.createClass({
       wrapperClassNames.push(this.props.disabledClassName);
     }
 
-    return wrapperClassNames.join(' ');
+    return wrapperClassNames.join(" ");
   },
   focus(ref) {
     ReactDOM.findDOMNode(ref).focus();
   },
-  renderChild (child, index) {
+  renderChild(child, index) {
     return React.cloneElement(child, {
       key: index,
-      ref: 'option' + index,
+      ref: "option" + index,
       isActive: this.state.selectedOptionIndex === index,
       onClick: this.onClickOption.bind(this, index),
       onKeyDown: this.onKeyDown,
-      automationId: (this.props.automationId ? this.props.automationId : 'select') + '-option-' + index
+      automationId:
+        (this.props.automationId ? this.props.automationId : "select") + "-option-" + index
     });
   },
-  renderSpacerChild (child, index) {
+  renderSpacerChild(child, index) {
     return React.cloneElement(child, {
       key: index,
       style: {
-        visibility: 'hidden',
-        height: '0 !important',
+        visibility: "hidden",
+        height: "0 !important",
         paddingTop: 0,
         paddingBottom: 0
       }
     });
   },
-  render () {
-    var hiddenListStyle = {visibility: 'hidden'};
-    var selectedOptionContent = this.state.selectedOptionIndex !== false &&
+  render() {
+    var hiddenListStyle = { visibility: "hidden" };
+    var selectedOptionContent =
+      this.state.selectedOptionIndex !== false &&
       this.props.children[this.state.selectedOptionIndex].props.children;
 
     if (this.props.optionListStyle) {
@@ -354,45 +382,59 @@ var classBase = React.createClass({
       <div
         className={this.getWrapperClasses()}
         onMouseDown={this.onMouseDown}
-        style={this.props.style} >
-        {this.props.showCurrentOptionWhenOpen || !this.state.open ?
+        style={this.props.style}
+      >
+        {this.props.showCurrentOptionWhenOpen || !this.state.open ? (
           <div
-            ref='currentOption'
+            ref="currentOption"
             className={this.props.currentOptionClassName}
             tabIndex={0}
             data-automation-id={this.props.automationId}
-            role='button'
+            role="button"
             onFocus={this.onFocus}
             onKeyDown={this.onKeyDown}
             onBlur={this.onBlur}
             onClick={this.toggleOpen}
             aria-expanded={this.state.open}
-            style={this.props.currentOptionStyle}>
-            {selectedOptionContent || this.props.placeholderText || this.props.children[0].props.children}
+            style={this.props.currentOptionStyle}
+          >
+            {selectedOptionContent ||
+              this.props.placeholderText ||
+              this.props.children[0].props.children}
           </div>
-          :
-          ''
-        }
-        {this.state.open ?
-          <div className={this.props.listClassName} onBlur={this.onBlurOption} style={this.props.optionListStyle}>
+        ) : (
+          ""
+        )}
+        {this.state.open ? (
+          <div
+            className={this.props.listClassName}
+            onBlur={this.onBlurOption}
+            style={this.props.optionListStyle}
+          >
             {React.Children.map(this.props.children, this.renderChild)}
           </div>
-          : ''
-        }
+        ) : (
+          ""
+        )}
         <select
-          disabled='true'
+          disabled="true"
           name={this.props.selectName}
           value={this.state.selectedOptionVal}
           className={this.props.hiddenSelectClassName}
           tabIndex={-1}
-          aria-label={this.props.ariaLabel ? this.props.ariaLabel : this.props.selectName }
-          aria-hidden={true} >
-            {React.Children.map(this.props.children, function (child, index) {
-              return <option key={index} value={child.props.value}>{child.props.value}</option>
-            })}
+          aria-label={this.props.ariaLabel ? this.props.ariaLabel : this.props.selectName}
+          aria-hidden={true}
+        >
+          {React.Children.map(this.props.children, function(child, index) {
+            return (
+              <option key={index} value={child.props.value}>
+                {child.props.value}
+              </option>
+            );
+          })}
         </select>
-        <span aria-hidden={true} style={hiddenListStyle} tabIndex={-1} >
-          <div style={{visibility: 'hidden', height: 0, position: 'relative'}} >
+        <span aria-hidden={true} style={hiddenListStyle} tabIndex={-1}>
+          <div style={{ visibility: "hidden", height: 0, position: "relative" }}>
             {React.Children.map(this.props.children, this.renderSpacerChild)}
           </div>
         </span>
@@ -402,30 +444,30 @@ var classBase = React.createClass({
 });
 
 classBase.Option = React.createClass({
-  displayName: 'RadonSelectOption',
+  displayName: "RadonSelectOption",
   propTypes: {
     // TODO: Disabled
-    value: React.PropTypes.string.isRequired,
-    children: React.PropTypes.oneOfType([React.PropTypes.node, React.PropTypes.string]).isRequired,
-    onClick: React.PropTypes.func,
-    automationId: React.PropTypes.string
+    value: PropTypes.string.isRequired,
+    children: PropTypes.oneOfType([React.PropTypes.node, React.PropTypes.string]).isRequired,
+    onClick: PropTypes.func,
+    automationId: PropTypes.string
   },
-  getDefaultProps () {
+  getDefaultProps() {
     return {
-      value: '',
+      value: "",
       automationId: undefined,
-      className: 'radon-select-option',
-      activeClassName: 'active',
-      hoverClassName: 'hover',
-      onClick () {}
+      className: "radon-select-option",
+      activeClassName: "active",
+      hoverClassName: "hover",
+      onClick() {}
     };
   },
-  getInitialState () {
+  getInitialState() {
     return {
       hovered: false
     };
   },
-  getClassNames () {
+  getClassNames() {
     var classNames = [this.props.className];
 
     if (this.props.isActive) {
@@ -436,19 +478,19 @@ classBase.Option = React.createClass({
       classNames.push(this.props.hoverClassName);
     }
 
-    return classNames.join(' ');
+    return classNames.join(" ");
   },
-  setHover (isHover) {
+  setHover(isHover) {
     this.setState({
       hovered: isHover
     });
   },
-  render () {
+  render() {
     return (
       // Safari ignores tabindex on buttons, and Firefox ignores tabindex on anchors
       // use a <div role="button">.
       <div
-        role='button'
+        role="button"
         className={this.getClassNames()}
         data-automation-id={this.props.automationId}
         tabIndex={-1}
@@ -456,7 +498,8 @@ classBase.Option = React.createClass({
         onMouseEnter={this.setHover.bind(this, true)}
         onMouseLeave={this.setHover.bind(this, false)}
         onKeyDown={this.props.onKeyDown}
-        style={this.props.style}>
+        style={this.props.style}
+      >
         {this.props.children}
       </div>
     );

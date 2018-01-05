@@ -1,22 +1,20 @@
-'use strict';
+"use strict";
 
-describe('Button', function () {
+describe("Button", function() {
+  var React = require("react");
+  var ReactDOM = require("react-dom");
+  var TestUtils = require("react-dom/test-utils");
 
-  var React = require('react');
-  var ReactDOM = require('react-dom');
-  var TestUtils = require('react-addons-test-utils');
-
-  var RadonSelect = require('select.jsx');
+  var RadonSelect = require("select.jsx");
   var container, component;
 
-  describe('Mounting', function() {
-
+  describe("Mounting", function() {
     beforeEach(function() {
-      container = document.createElement('div');
+      container = document.createElement("div");
       component = ReactDOM.render(
-        React.createElement(RadonSelect, {selectName: "test"}, [
-          React.createElement(RadonSelect.Option, {key: "blah"}, "blah"),
-          React.createElement(RadonSelect.Option, {key: "foo"}, "foo")
+        React.createElement(RadonSelect, { selectName: "test" }, [
+          React.createElement(RadonSelect.Option, { key: "blah" }, "blah"),
+          React.createElement(RadonSelect.Option, { key: "foo" }, "foo")
         ]),
         container
       );
@@ -26,8 +24,8 @@ describe('Button', function () {
       ReactDOM.unmountComponentAtNode(container);
     });
 
-    it('should render into the document', function() {
-        expect(component.isMounted()).to.be.true;
+    it("should render into the document", function() {
+      expect(component.isMounted()).to.be.true;
     });
   });
 });
